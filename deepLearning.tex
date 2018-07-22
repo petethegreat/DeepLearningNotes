@@ -44,6 +44,7 @@ The log of the product reduces to a sum over logs.
 
 
 \subsection{sigmoid}
+Sigmoid used to be the default activation function, but in recent times ReLu has proven to be more popular/perform better. Sigmoid is still good for an output function (i.e. activation function in the output layer) in binary classification tasks.
 The sigmoid function (or logit function) and its derivative are given by
 \begin{eqnarray*}
 \sigma(x) & = &\frac{1}{1 - e^{-x}} \\
@@ -65,6 +66,7 @@ these are plotted below
 \end{figure}
 
 \subsection{tanh}
+Tanh is good. It's a nonlinear function, like sigmoid, but for zero input it returns zero output. The mean of this function (given uniform x) is zero, so it handles centred data very well ( zero input gives zero output).
 The tanh function (sinh/cosh) and its derivative are given by
 \begin{eqnarray*}
 \mathrm{tanh}(x) & = &\frac{e^x\,-\, e^{-x}}{e^x\,+\, e^{-x}} \\
@@ -86,8 +88,33 @@ these are plotted below
 \end{figure}
 
 \subsection{ReLu}
-rectified linear unit
+rectified linear unit. Max(0,x). This is a very popular activation, as it tends to give good results. Should in general be the first choice for an activation function (rather than sigmoid/tanh, though there may be cases where these perform better).
+\begin{figure}[tb]
+\begin{centering}
+\subfigure{
+\includegraphics[width=0.45\linewidth,angle=0]{tanh.pdf}
+% \caption{tanh activation function}
+}
+\subfigure{
+\includegraphics[width=0.45\linewidth,angle=0]{tanh_derivative.pdf}
+% \caption{tanh derivative}
+}
+\end{centering}
+\end{figure}
+
 \subsection{leaky ReLu}
-Gradient saturation and such
+Gradient saturation and such. If a Relu Network ever gets to a state where the inputs are large and negative, all the gradients will vanish, and the network will stop updating, it gets stuck. Leaky Relu has a very small (1\%) output for negative x, so the gradient never fully vanishes. It's a little more robust
+\begin{figure}[tb]
+\begin{centering}
+\subfigure{
+\includegraphics[width=0.45\linewidth,angle=0]{tanh.pdf}
+% \caption{tanh activation function}
+}
+\subfigure{
+\includegraphics[width=0.45\linewidth,angle=0]{tanh_derivative.pdf}
+% \caption{tanh derivative}
+}
+\end{centering}
+\end{figure}
 \end{document}
 
