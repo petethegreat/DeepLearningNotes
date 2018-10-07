@@ -19,12 +19,10 @@
 \begin{document}
 
 % TODO:
-% add stuff on notation, make sure we get this right
-% add more to stuff on matrix dimensions and indices
 % add more on gradient saturation/relu/leaky relu
 % Forward propagation
 % BackPropagation
-% Cost function - start from logistic loss - generalise to cross entropy
+% Xavier Initialisation, He initialisation
 
 \section{random notes}
 Don't use sigmoid as an activation function. Tanh is generally superior, as it has a mean of zero (sigmoid has a mean of 0.5). Nonzero mean can make training more difficult in subsequent layers. Tanh has a mean of zero. May want a sigmoid as a final activation function (that is, in the output layer) when doing a binary classification problem.
@@ -95,9 +93,11 @@ A network consists of $L$ layers. The $l$th layer contains $n_l$ neurons, or nod
 A^l &=& f(Z^l) \\
 & =& f(W^lA^{l-1} + b^l)
 \end{eqnarray*}
-Where $W^l$ is a matrix of weights for layer $l$ and $b^l$ is a vector of biases. The weight vector acts on the prior layer of activations, or the first layer acts on the raw inputs. for $m$ training examples, the raw inputs $X$ (or $A^0$) has dimensions $(n^0,m)$, and each the weight matrix for each layer has dimension $(n^l,n^{l-1})$. 
+Where $W^l$ is a matrix of weights for layer $l$ and $b^l$ is a vector of biases. The weight vector acts on the prior layer of activations, or the first layer acts on the raw inputs (the raw inputs,$X$, can be thought of as $A^{[0]}$. For $m$ training examples, $X$ has dimensions $(n_0,m)$, and each the weight matrix for each layer has dimension $(n^l,n^{l-1})$. 
 
-square brackets in the superscript denote the layer. Round brackets in the superscript denote the training example (column for X,Y), squiggly brackets denote the mini batch number used in batched gradient descent.
+
+
+Square brackets in the superscript denote the layer, for example, $A^{[l]}$ denotes the vector (or matrix) of activations (outputs) from the $l$th layer of the network. Round brackets in the superscript denote the training example (column for X,Y), such that $Z^{[l](i)}$ denotes the $ith$ column of the linearized inouts for the $l$th layer, squiggly brackets denote the mini batch number used in batched gradient descent, $A^{[l]\{k\}}$ are the activations for the $l$th layer in the $k$th mini batch.
 Note that training epoch refers to the numer of traversals through the training dataset.
 
 
@@ -232,16 +232,89 @@ Gradient saturation and such. If a Relu Network ever gets to a state where the i
 \subfigure{
 \includegraphics[width=0.45\linewidth,angle=0]{leaky_ReLu_derivative.pdf}
 % \caption{tanh derivative}
-}
+} 
 \end{centering}
 \caption{Leaky Relu activation function and its derivative}
 
 \end{figure}
 
+\section{Initialisation}
+Initialising weights to zero is a Bad Idea. 
+
 \section{regularisation/tuning}
 \subsection{dropout}
+dropout is a form of regularisation where the outputs from certain nodes are randomly suppressed (set to zero). This can be thought of as an ensemble technique, instead of using a single network, an ensemble could be trained, each using different network configurations. Averaging over all members of the ensemble should reduce the variance of the model. Instead of actually training many different networks, the same structure is kept, but for each gradient descent iteration (forward prop and backward prop) the outputs of a set of randomly selected nodes are masked. 
+ 
+In inverted dropout, each node is kept (not dropped) with probability $p$. In order to maintain the same expected value for activations, these are all scaled by the inverse of the keep probability, $1/p$, hence inverted dropout.
 inverted dropout
 
+\subsection{optimisation Methods}
+\begin{itemize}
+    \item {\bf Gradient Descent} - the usual. For each step, compute the activations for each training example. Compute the cost (over all training examples) and determine the gradients. Gradients are averaged over all training examples, and then a single step is taken. 
+    \item {\bf Mini Batch Gradient descent} - Shuffle the training data, then divide into some number of batches. For each batch, compute the cost and average the gradients, then take a step. If there are $s$ batches, then $s$ iterations correspondf to one loop over the entire training set, or a single epoch.
+    \item {\bf Stochastic Gradient descent} - Shuffle the training data, then randomly select a single example. compute the cost and gradient, then take a step. This is noisier, but the noise can improve performance in cases where the cost function (total) has a narrow valley like shape. Gradient descent would take many steps across the valley and back, and would take a long time to converge (if at all). The noise present in SGD means that the step is unlikely to be taken in the exactly optimal direction, so we move around the cost function more and don't get stuck going back and forth across the minimum. This also means that the steps can be computed quickly, we don't need to process a large number of examples to take a single step.
+\end{itemize}
+\subsection{ Momentum, RMSprop, Adam}
+\subsubsection{exponentially weighted average}
+\begin{equation}
+v_t = \beta \theta_t + (1-\beta)v_{t-1}
+\end{equation}
+\subsubsection{momentum}
+Instead of taking a minibatch gradient descent step using the gradients computed at iteration $t$, use a weighted average of the current gradient computation and the weighted gradient from the previous iteration
+\subsubsection{RMSprop}
+
+\subsubsection{Adam}
+
+\section{Batch Normalisation}
+In Logistic regression (for example), when feeding in features it can help to normalise things (centre and scale them). 
+In neural networks, it would be good to normalise the inputs the inputs for each hidden layer, i.e. the activations $A^{[l-1]}$ of the preceding layer. This would make training the weights/biases of layer $l$ easier.
+
+For batch normalisation, instead of normalising the activations, we normalise the linear input, $Z^{[l]}$
+For the examples $i$ in a given batch, we compute
+\begin{eqnarray}
+\mu &=& \frac{1}{m} \sum_i Z^{(i)} \\
+\sigma^2 &=& \frac{1}{m} \sum (Z^(i) - \mu)^2 \\
+Z^{(i)}_\mathrm{norm} & = & \frac{Z^{(i)} - \mu}{\sqrt{\sigma^2 + \epsilon}}
+\end{eqnarray}
+Where $\epsilon$ is a small positive number. The normalised inputs $Z_\mathrm{norm}$ should thus have mean zero and unit variance. This seems good, but may not be ideal. We take a further step, and define
+\begin{equation}
+\tilde{Z}^{(i)} = \gamma Z^{(i)}_\mathrm{norm} + \beta
+\end{equation}
+where $\gamma$ and $\beta$ are tunable (hyper) parameters, that can be determined via backpropagation. This effectively tunes the mean and variance of the inputs $\tilde{Z}$ to the best value for the layer. This is done on a batch by batch basis.
+
+For scoring, we might only be working with a single observation at a time. Also, tweaking network parameters based on test data is a Bad Idea. The batch normalisation parameters to be used when scoring should be computed while training. When computing the values for each batch, an exponentialy weighted averge of these parameters should be calculated. This average should be used when scoring.
+
+\section{Structuring Machine Learning Projects}
+\subsection{metrics}
+There are satisficing and optimising metrics. For example, a system should run as fast as possible but use less thatn 10MB of memory. The memory requirement is a satisficing metric, either the solution satisfies the metric or it does not. The accuracy is an optimising metric, there is no hard limit on it, it should just be as high as possible.
+
+Sometimes the evaluation metric can be tweaked depending on the situation. If there is a category of input that should not be miscategorised then these could receive a high weight in the evaluation metric. For example, consider an image classification task, for which we are interested in minimising the error. We really don't want to misclassify pornographic images as cats, so we assign a high weight to images that we know to be porn. An algorithm that performs well against this metric should be less likely to misclassify porn.
+
+\subsection{Data distributions}
+
+Generally, it is not ideal to train a model on a different distribution of data to what it will be exposed to when deployed. 
+For a given project, there may be data available from a variety of sources. For example, consider image recognition in self driving cars. There may be many photos of the outdoors available from the internet, and maybe some more specific datasets consisting of car and road sign images, and maybe a small set of actual images taken by the camera of the car prototype. How to best make use of these depends on the size and relevance of these datasets.
+
+The most relevant images are those taken by the car's camera during testing. We are most interested in how well our model performs on images like these. They should be included in the dev and test sets, and if there are enough of them then in training also. If the bulk of the training set comes from a different distribution (e.g. plentiful internet images), then it may not be beneficial to include all the car-camera images in there. 
+
+If the car camera images are shared between test and dev sets, then this can introduce data-distribution errors. A difference between training and dev sets may generally be attributed to overfitting, but if training and dev are drawn from different distributions of data then this can be the source of the error. A training-dev set can be constructed by partitioning off a set of data from the same distribution as the training set. Comparing the training error rate with the training-dev error rate then gives some estimate of the model's variance. The difference between the training-dev and dev sets can then be attributed to data distribution differences, (assuming that the model is not overfitting to the dev set)
+
+Bayes error rate - the lowest error rate acheivable
+Human error rate - for tasks that humans are good at, generally considered a good approximation to Bayes rate
+Training error rate > Human/Bayes rate - Model bias. Model should perform well on the training set. If not, use a more complex model.
+Training-dev error rate > training error rate - Model is overfitting to the training set, get more data, use regularisation
+Dev error rate > training-dev error rate - data distribution error. may need to augment training data, acquire more relevant training examples. Analyse dev set examples that are miscategorised, and try to figure out why the errors are occuring. Work on improving performance on the most significant sources of error.
+Test error rate > dev error rate - overfit to dev set. Use regularisation, get more dev data.
+
+
+
+
+
+
+
+dev set/test set, distributions
+
+performing well on the training set by poorly on the dev set means we have overfit to our training data. We should increase regularisation, get more training data, 
 
 \end{document}
 
