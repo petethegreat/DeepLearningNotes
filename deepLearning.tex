@@ -306,15 +306,55 @@ Training-dev error rate > training error rate - Model is overfitting to the trai
 Dev error rate > training-dev error rate - data distribution error. may need to augment training data, acquire more relevant training examples. Analyse dev set examples that are miscategorised, and try to figure out why the errors are occuring. Work on improving performance on the most significant sources of error.
 Test error rate > dev error rate - overfit to dev set. Use regularisation, get more dev data.
 
-
-
-
-
-
-
 dev set/test set, distributions
 
 performing well on the training set by poorly on the dev set means we have overfit to our training data. We should increase regularisation, get more training data, 
+
+\section{convolution layers}
+\subsection{Convolutions}
+In Image processing, convoloution takes a filters and moves it through (convolves it with) all possible positions in the input image. A filter of the form
+\begin{equation}
+f = \left[ \begin{array}{ccc}
+1 & 0 & -1 \\
+1 & 0 & -1 \\
+1 & 0 & -1 
+\end{array} \right]
+\end{equation}
+will identify ( give a strong output for) vertical edges. Cases where pixels in the rightmost column have a higher total value (are brighter) than pixels in the leftmost column will give a strong negative result, cases where the LHS are higher will give a positive result.
+
+By setting the values of the filter elements, we can decide what sort of features (e.g. edges) we are looking for. An alternative is to leave all of the $f \times f$ elements as parameters, and have our deep learning model learn what sort of filters (or features) are appropriatte through backpropagation.
+
+
+If the input image hasw dimension $n\times n$, and the filter has dimension $f \times f$, then the output of the convolution will be an array of dimension $n - f +1 \times n - f +1$. This is the number of ways that the filter can ``fit into'' the input image. This is called a ``valid'' convolution, it has two disadvantages in that it discards data around the edge of the input (or this data is not considered as often), and that the dimensions of the output are not equal to the input. An alternative is to pad the input image, i.e. add $p$ more pixels of synthetic data around the edges of the original image. With padding, the dimension of the output is given by $ n + 2p -f +1 \times n + 2p -f +1$, which is equal to $n$ if we choose $p = (f-1)/2$. 
+
+Stride - sometimes we don't want (need) to apply an $f \times f$ filter to every unique $f \times f$ group of pixels in the input. A stride of $s$ means that we move the filter $s$ pixels over between each application of the filter. In this case, the output of the filter has dimension $(n + 2p - f)/s + 1 \times (n + 2p - f)/s + 1$  
+
+\subsection{Convolutions over volume}
+
+Images have generally 3 channels, rgb. We could have one filter for red edges, nother for green, and a third for blue. Instead, we could have a three dimensional filter ($f \times f \times n_c$) which acts on all colours and would produce a signal if it found vertical edges across any colours. We can also stack filters, so that we apply vertical and horizontal edge detection. In this case, our input image has size $n \times n \times n_c$, our filters have size $f\times f \times n_c$, and our output has size $ n-f+1 \times n-f+1 \times n_f$, where $n_f$ is the number of filters we have. The number of channels in the image and in the filter must match.
+
+\subsection{Dimensions of a convolution layer}
+
+As usual, square brackets in superscript refer to attributes of layer $l$:
+
+
+\begin{tabular}{lr}
+$f^{[l]}$ &  filter size \\ 
+$p^{[l]}$ &  padding size (along each edge)\\ 
+$s^{[l]}$ &  stride length\\ 
+$n_c^{[l]}$ &  number of filters/channels\\ 
+$a^{[l]}$ & activations\\
+$n_w^{[l]}$ & number of pixels in each row\\
+$n_h^{[l]}$ & number of pixels in each column\\
+filter dimension &  $f^{[l]} \times f^{[l]} \times n_c^{[l-1]}$\\ 
+input dimension & $n_h^{[l-1]} \times n_w^{[l-1]} \times n_c^{[l-1]}$  \\
+output dimension &  $n_h^{[l]} \times n_w^{[l]} \times n_c^{[l]}$\\
+$n_h^{[l]}$ & $\lfloor(n_h^{[l-1]} + 2 p^{[l]} - f^{[l]})/s^{[l]} + 1 \rfloor$ \\
+$n_w^{[l]}$ & $\lfloor(n_w^{[l-1]} + 2 p^{[l]} - f^{[l]})/s^{[l]} + 1 \rfloor$ \\
+\end{tabular}
+
+Where $\lfloor x \rfloor$ denotes the floor of $x$ (round down to next integer value)
+Note that the number of input image channels (colours) can be thought of as the number of filters in layer 0.
 
 \end{document}
 
