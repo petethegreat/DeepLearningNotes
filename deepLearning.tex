@@ -356,5 +356,21 @@ $n_w^{[l]}$ & $\lfloor(n_w^{[l-1]} + 2 p^{[l]} - f^{[l]})/s^{[l]} + 1 \rfloor$ \
 Where $\lfloor x \rfloor$ denotes the floor of $x$ (round down to next integer value)
 Note that the number of input image channels (colours) can be thought of as the number of filters in layer 0.
 
+\subsection{Notable Networks}
+\begin{itemize}
+    \item AlexNet
+    \item LeNet
+    \item LMG16 (?)
+\end{itemize}
+\subsection{ResNets}
+
+Residual networks - have an additional connection - there is an additional connection from one layer to a nodes in layers a few layers prior
+For example, the activation at a given layer may have the form
+\begin{eqnarray*}
+a^{[l+2]} &= & g( z^{[l+2]} + a^{[l]} ) \\
+& = & g( W^{[l+2]} a^{[l+1]} + b^{[l+2]} + a^{[l]} )
+\end{eqnarray*}
+There can be problems where the accuracy of a network degrades as the depth increases. The `shortcut' from the activation of layer $l$ to the input of layer $l+2$ means that the accuracy should not be worsened by the addition of the extra layer (if this were to happen, the coefficients $W^{[l+2]}$ should vanish) .
+
 \end{document}
 
