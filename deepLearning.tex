@@ -372,5 +372,18 @@ a^{[l+2]} &= & g( z^{[l+2]} + a^{[l]} ) \\
 \end{eqnarray*}
 There can be problems where the accuracy of a network degrades as the depth increases. The `shortcut' from the activation of layer $l$ to the input of layer $l+2$ means that the accuracy should not be worsened by the addition of the extra layer (if this were to happen, the coefficients $W^{[l+2]}$ should vanish) .
 
+\subsection{object detection}
+Train a net to classify objects. The output has 6 components: $[p_c, b_x, b_y, b_w, b_h, c]$. $p_c$ is the confidence, or score, for the detection, a high score indicates we are confident that we have detected an object. The quantities $b_x, b_y, b_w, b_w$ refer to the bounding box of the detected object, the coordinates of the centre of the box (x,y) and the width and height, respectively. $c$ is an encoding that represents the class of the object. This can be one-hot encoded, such that the output vector has dimension 5 + number of object classes.
+
+
+
+\subsection{YOLO - you only look once}
+\begin{itemize}
+	\item bounding box - loss functions
+	\item sliding window
+	\item intersection over union
+	\item anchor boxes/YOLO
+\end{itemize}
+
 \end{document}
 
