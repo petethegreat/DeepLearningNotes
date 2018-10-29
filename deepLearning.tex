@@ -372,5 +372,12 @@ a^{[l+2]} &= & g( z^{[l+2]} + a^{[l]} ) \\
 \end{eqnarray*}
 There can be problems where the accuracy of a network degrades as the depth increases. The `shortcut' from the activation of layer $l$ to the input of layer $l+2$ means that the accuracy should not be worsened by the addition of the extra layer (if this were to happen, the coefficients $W^{[l+2]}$ should vanish) .
 
+This also helps with vanishing gradients - as there is no weight associated with the residual (skipped) activation, the derivative backpropagates directly to origin layer without incuring a factor of the weight (or the product of multiple weights)
+
+\subsection{inception network}
+Not sure whether to use 3x3convolution, 5x5 convolution, or maxpooling? why not all? Can create all layers and stack them side by side, as long as each produces output of the same shape (# of channels can differ, but height and width should match).
+Downside is computational cost.
+
+Bottleneck layers (1x1 convolutions) sum over all channels, so can be used to reduce the number of channels in the model. If we have an inception layer with multiple operations stacked, then a bottleneck convolution can be used reduce the number of channels and lower the computational cost.
 \end{document}
 
