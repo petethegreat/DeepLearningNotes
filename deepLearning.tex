@@ -379,5 +379,31 @@ Not sure whether to use 3x3convolution, 5x5 convolution, or maxpooling? why not 
 Downside is computational cost.
 
 Bottleneck layers (1x1 convolutions) sum over all channels, so can be used to reduce the number of channels in the model. If we have an inception layer with multiple operations stacked, then a bottleneck convolution can be used reduce the number of channels and lower the computational cost.
+
+\subsection{object detection}
+Train a net to classify objects. The output has 6 components: $[p_c, b_x, b_y, b_w, b_h, c]$. $p_c$ is the confidence, or score, for the detection, a high score indicates we are confident that we have detected an object. The quantities $b_x, b_y, b_w, b_w$ refer to the bounding box of the detected object, the coordinates of the centre of the box (x,y) and the width and height, respectively. $c$ is an encoding that represents the class of the object. This can be one-hot encoded, such that the output vector has dimension 5 + number of object classes.
+
+
+
+\subsection{YOLO - you only look once}
+\begin{itemize}
+	\item bounding box - loss functions
+	\item sliding window
+	\item intersection over union
+	\item anchor boxes/YOLO
+\end{itemize}
+{\bf go over this, add more detail}
+Each grid has a number of anchor boxes associated with it. Each anchor box can identify an object. A give grid is responsible for identifying an object if that object's bounding box lies within the grid.
+So Each grid looks for up to 5 objects. For each a bounding box is identified, as well as a class identifier and a confidence score. 
+
+Once each grid has identified its objects, then the most relevant are kept. We don't want to identify the same image multiple times, so we take all objects of a given class and rank them by confidence. We only keep those for which the intersection over union is less than a given threshold, as this should ensure that identified objects are distinct.
+
+\subsection{facial recognitino and one shot learning}
+
+
+\subsection{neural style transfer}
+visualising and understanding convultional networks, Zeiler and Fergus 2013
+
+
 \end{document}
 
