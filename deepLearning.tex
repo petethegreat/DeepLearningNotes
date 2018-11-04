@@ -399,6 +399,23 @@ When trained on pascal VOC (dataset?), used $S = 7$, $B = 2$, and $C=20$.
 
 \subsubsection{network architecture}
 Modeled after googLeNet. 
+\begin{table}[hbp]
+\begin{tabular}{|l|l|l|l|}
+layer/type & input dim & filter size/stride & output dim \\
+\hline
+1. conv & $448\times448\times3$ & $7\times7\times 64$, s=2, p=3? & $224\times224\times64$ \\
+2. maxPool & $224\times224\times64$ & $2\times2$, s=2 & $112\times112\times64 \\
+\hline
+\end{tabular}
+\end{table}
+final output is $7\times7\times30$ tensor, as there are 7 grid cells used used (pascal VOC), 20 classes, and 2 bounding boxes per grid cell.
+
+Regularisation parameters are used in loss such that bounding box errors and no obkect predictions are treated differently. $\lambda_{coord} = 5, \lambda_{noobj} = 0.5$.
+
+Each cell has two "anchor boxes" (predicted bounding boxes). These tend to specialise, so the shapes get different, and they become sensitive to different classes.
+
+
+
 
 Each grid has a number of anchor boxes associated with it. Each anchor box can identify an object. 
 So Each grid looks for up to 5 objects. For each a bounding box is identified, as well as a class identifier and a confidence score. 
