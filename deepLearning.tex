@@ -10,6 +10,7 @@
 % \usepackage[pdf]{graphviz}
 %\usepackage{feynmp}
 \usepackage{subfigure}
+\usepackage{dsfont}
 \graphicspath{{figs/}}
 
 \title{Deep Learning Notes}
@@ -394,33 +395,44 @@ Train a net to classify objects. The output has 6 components: $[p_c, b_x, b_y, b
 	\item anchor boxes/YOLO
 \end{itemize}
 {\bf go over this, add more detail}
-Input image is resized to desired input dimensions (448x448), and is divided into SxS (S=19) grid cells. A given grid is responsible for identifying an object if that object's bounding box lies within the grid. Each grid cell predicts B bounding boxes, and provides a confidence score for each. Confidence is a measure of how confidant the model is that a box contains an object, and also how confidant the model is in the accuracy of the bounding box ($P_b = Pr(object) * IOU_\mathrm{pred}^\mathrm{turth}$). Each bounding box has 5 parameters associated with it: $x,y,w,h,P_b$. Respectively, these are the $x$ and $y$ coordinates of the object centre, the width and height of the bounding box, and the confidence in prediction. Each grid cell also contains conditioned class probabilities, $P_c= Pr(class_i|object)$, given an object has been detected, the probability of that object belonging to class $i$. At test time, these class probabilities are multiplied by the detection probabilities to obtain class-specific confidence scores for each box, i.e. the probability of the box containing an object of class $i$, for all the classes we can recognise. The output is a tensor containing $S\timesS\times( B\times 5 + C)$ elements, where $C$ is the number of object classes that the model is trained to recognise.
-When trained on pascal VOC (dataset?), used $S = 7$, $B = 2$, and $C=20$.
+Input image is resized to desired input dimensions (448x448), and is divided into SxS (S=19) grid cells. A given grid is responsible for identifying an object if that object's bounding box lies within the grid. Each grid cell predicts B bounding boxes, and provides a confidence score for each. Confidence is a measure of how confidant the model is that a box contains an object, and also how confidant the model is in the accuracy of the bounding box ($P_b = Pr(object) * IOU_\mathrm{pred}^\mathrm{turth}$). Each bounding box has 5 parameters associated with it: $x,y,w,h,P_b$. Respectively, these are the $x$ and $y$ coordinates of the object centre, the width and height of the bounding box, and the confidence in prediction. Each grid cell also contains conditioned class probabilities, $P_c= Pr(class_i|object)$, given an object has been detected, the probability of that object belonging to class $i$. At test time, these class probabilities are multiplied by the detection probabilities to obtain class-specific confidence scores for each box, i.e. the probability of the box containing an object of class $i$, for all the classes we can recognise. The output is a tensor containing $S\times S\times( B\times 5 + C)$ elements, where $C$ is the number of object classes that the model is trained to recognise.
+When trained on pascal VOC (dataset?), used $S = 7$, $B = 2$, and $C=20$. 
+Each cell has two "anchor boxes" (predicted bounding boxes). These tend to specialise, so the shapes get different, and they become sensitive to different classes.
 
 \subsubsection{network architecture}
 Modeled after googLeNet. 
 \begin{table}[hbp]
 \begin{tabular}{|l|l|l|l|}
+\hline
 layer/type & input dim & filter size/stride & output dim \\
 \hline
-1. conv & $448\times448\times3$ & $7\times7\times 64$, s=2, p=3? & $224\times224\times64$ \\
-2. maxPool & $224\times224\times64$ & $2\times2$, s=2 & $112\times112\times64 \\
+1. conv & $448 \times448 \times 3$ & $7 \times 7\times 64$, s=2, p=3? & $224 \times 224 \times 64$ \\
+2. maxPool & $224\times224\times64$ & $2\times2$, s=2 & $112\times112\times64 $ \\
 \hline
+
 \end{tabular}
 \end{table}
 final output is $7\times7\times30$ tensor, as there are 7 grid cells used used (pascal VOC), 20 classes, and 2 bounding boxes per grid cell.
 
 Regularisation parameters are used in loss such that bounding box errors and no obkect predictions are treated differently. $\lambda_{coord} = 5, \lambda_{noobj} = 0.5$.
 
-Each cell has two "anchor boxes" (predicted bounding boxes). These tend to specialise, so the shapes get different, and they become sensitive to different classes.
+loss:
+\begin{eqnarray*}
+J & = & \lambda_{coord}\,\sum_{i=0}^{S^2} \sum_{j=0}^{B} \mathds{1}^{obj} \left[(x_i - \hat{x}_i)^2 + (y_i - \hat{y}_i)^2 \right] \\
+ & + & \lambda_{coord}\,\sum_{i=0}^{S^2} \sum_{j=0}^{B} \mathds{1}^{obj} \left[(\sqrt{w_i} - \sqrt{\hat{w}_i})^2  + (\sqrt{h_i} - \sqrt{\hat{h}_i})^2  \right] \\
+  & + & \sum_{i=0}^{S^2} \sum_{j=0}^{B} \mathds{1}^{obj} \left( C_i - \hat{C}_i  \right)^2 \\
+  & + & \lambda_{noobj} \sum_{i=0}^{S^2} \sum_{j=0}^{B} \mathds{1}^{noobj} \left( C_i - \hat{C}_i  \right)^2 \\
+  & + &  \sum_{i=0}^{S^2}  \mathds{1}^{obj}_i  \sum_{c \in \mathrm{classes} }\left( p_i(c) - \hat{p}_i(c)  \right)^2
+\end{eqnarray*}
+where $\mathds{1}^{obj}_i$ indicates that the object appears in grid cell $i$, and $\mathds{1}^{obj}_{ij}$ indicates that it is the $j$-th bounding (anchor) box that is responsible for making this prediction. The prediction is assigned to the anchor box that has the highest IOU with the bounding box of the ground truth.
+
+Bounding box (anchor box) dimensions only contribute to the loss if that box is deemed "responsible" for the object. 
+
+Non maximal suppression can be used to trim/filter final predictions.
+
+Majority of YOLO's errors are related to localisation, the object is identified correctly, but the bounding box is not assigned accurately. A prediction is considered to have a localisation error if the object classification is correct, but the predicted IOU with ground truth is between 0.1 and 0.5.
 
 
-
-
-Each grid has a number of anchor boxes associated with it. Each anchor box can identify an object. 
-So Each grid looks for up to 5 objects. For each a bounding box is identified, as well as a class identifier and a confidence score. 
-
-Once each grid has identified its objects, then the most relevant are kept. We don't want to identify the same image multiple times, so we take all objects of a given class and rank them by confidence. We only keep those for which the intersection over union is less than a given threshold, as this should ensure that identified objects are distinct.
 
 \subsection{facial recognitino and one shot learning}
 
