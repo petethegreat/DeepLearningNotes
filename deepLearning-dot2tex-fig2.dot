@@ -1,0 +1,45 @@
+digraph rnn1 {
+rankdir=BT;
+d2tgraphstyle="scale=0.6";
+node [shape=square];
+subgraph inputlayer {
+    node [shape=none];
+    x_1 [label="x^{\langle 1 \rangle}"];
+    x_2 [label="x^{\langle 2 \rangle}"];
+    x_3 [label="x^{\langle 3 \rangle}"];
+    x_4 [label="x^{\langle 4 \rangle}"];
+    label="input layer";
+    };
+subgraph hiddenlayer {
+    node [shape=square];
+    a_0 [label="a^{\langle 0 \rangle}"];
+    a_1 [label="a^{\langle 1 \rangle}"];
+    a_2 [label="a^{\langle 2 \rangle}"];
+    a_3 [label="a^{\langle 3 \rangle}"];
+    a_4 [label="a^{\langle 4 \rangle}"];
+    label="hidden layer";
+    };
+ subgraph outputlayer {
+    node [shape=circle];
+    y_1 [label="y^{\langle 1 \rangle}"];
+    y_2 [label="y^{\langle 2 \rangle}"];
+    y_3 [label="y^{\langle 3 \rangle}"];
+    y_4 [label="y^{\langle 4 \rangle}"];
+    label="output layer";
+    };
+x_1 -> a_1 [ label="w_{ax}"];
+x_2 -> a_2 [ label="w_{ax}"];
+x_3 -> a_3 [ label="w_{ax}"];
+x_4 -> a_4 [ label="w_{ax}"];
+a_1 -> y_1 [ label="w_{ya}"];
+a_2 -> y_2 [ label="w_{ya}"];
+a_3 -> y_3 [ label="w_{ya}"];
+a_4 -> y_4 [ label="w_{ya}"];
+a_0 -> a_1 [ label="w_{aa}"];
+a_1 -> a_2 [ label="w_{aa}"];
+a_2 -> a_3 [ label="w_{aa}"];
+a_3 -> a_4 [ label="w_{aa}"];
+{rank = same x_1; x_2; x_3; x_4;}
+{rank = same a_0; a_1; a_2; a_3; a_4;}
+{rank = same y_1; y_2; y_3; y_4;}
+};
