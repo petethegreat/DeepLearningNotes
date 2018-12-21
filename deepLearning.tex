@@ -515,10 +515,10 @@ a_3 -> a_4 [ label="w_{aa}"];
 
 The hidden layer acts on the inputs as well as the activations from the previous item in the sequence.
 \begin{eqnarray*}
-a^{\langle 0 \rangle} & = & 0
+a^{\langle 0 \rangle} & = & 0 \\
 a^{\langle i \rangle} & = &g_1( W_{aa} a^{i-1} + W_{ax} x^{\langle i \rangle} + b_a) \\
 \hat{y}^{\langle i \rangle} & = &g_2( W_{ya} a^{i} + b_y) \\
-\end{document}
+\end{eqnarray*}
 
 
 \subsection{GRU}
@@ -529,6 +529,6 @@ Each LSTM cell takes two inputs from the preceding cell in the sequence, the act
 
 \subsection{Bidirectional RNNS}
 
-In a unidirectional RNN, the activations at stage $<j>$ depend on the input $x^{\langle j \rangle}$ as well as the activations at the prior stage $a^{\langle j-1 \rangle}. A bidirectional RNN is essentially two unidirectional RNNs strapped together, one operates on the usual input sequence $(x^{\langle 1 \rangle}, x^{\langle 2 \rangle}, \ldots,  x^{\langle T \rangle} )$, while the other operates on the reversed sequence $(x^{\langle T \rangle}, x^{\langle T-1 \rangle}, \ldots,  x^{\langle 1 \rangle} )$. For the reverse network, the activations from stage $T$ are used as inputs at stage $T-1$. Both sets of activations are used to form (via some other layers) the sequence of predictions, $y^{\langle j \rangle}$.
-
+In a unidirectional RNN, the activations at stage $<j>$ depend on the input $x^{\langle j \rangle}$ as well as the activations at the prior stage $a^{\langle j-1 \rangle}$. A bidirectional RNN is essentially two unidirectional RNNs strapped together, one operates on the usual input sequence $x^{\langle 1 \rangle}, x^{\langle 2 \rangle}, \ldots,  x^{\langle T \rangle} $, while the other operates on the reversed sequence $x^{\langle T \rangle}, x^{\langle T-1 \rangle}, \ldots,  x^{\langle 1 \rangle} $. For the reverse network, the activations from stage $T$ are used as inputs at stage $T-1$. Both sets of activations are used to form (via some other layers) the sequence of predictions, $y^{\langle j \rangle}$.
+\end{document}
 
